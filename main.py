@@ -135,13 +135,13 @@ def timerFired(app):
         spawnEnemyJet(app)
     if app.timePassed % 5 == 0:
         moveEnemyJet(app)
-        shootUserMissile(app)
-    # need to set general variable for addEnemyMissile
+    # need to set general variable for addEnemyMissile (default = 1000)
     if app.timePassed % 1000 == 0:
         addEnemyMissile(app)
     # need to set general variable for shootEnemyMissile
     if app.timePassed % 10 == 0:
         shootEnemyMissile(app)
+        shootUserMissile(app)
 
 def drawHealthBar(app, canvas, health):
     x0 = 0
@@ -159,8 +159,9 @@ def drawHealthBar(app, canvas, health):
     y0 = 1/50 * app.height
     y1 = 1/50 * app.height
     canvas.create_line(x0, y0, x1, y1, fill = 'tan')
-    canvas.create_text(app.width-50, 100, text = f'{app.health}',
-                        fill = 'red', font = 'Courier 15')
+    canvas.create_text(app.width-50, 40, text = f'{app.health}',
+                        fill = 'red', font = 'Courier 30 bold')
+
 
 def drawPauseButton(app, canvas):
     canvas.create_image
@@ -173,7 +174,7 @@ def drawPause(app, canvas):
     canvas.create_rectangle(cx - 110, cy - 50, cx + 110, cy + 60, fill = 'black')
     canvas.create_text(app.width//2, app.height//2, text = 'Game paused', 
                         font = 'Courier 30 bold', fill = 'red')
-    canvas.create_text(app.width//2, app.height//2+25, text = 'Click "p" to unpause', fill = 'red',
+    canvas.create_text(app.width//2, app.height//2+25, text = 'Press "p" to unpause', fill = 'red',
                         font = 'Courier 15 bold')
 
 def drawScore(app, canvas):
@@ -338,8 +339,11 @@ def shootEnemyMissile(app):
         info[1] += dx
         if hitBoxUser(app):
             app.health -= 1
+            if app.health <= 0:
+                app.gameOver = True
         elif info[2] >= app.height:
             app.enemyMissiles.remove(info)
+    
 
 def shootUserMissile(app):
     for pair in app.userMissiles:
@@ -356,7 +360,7 @@ def hitBoxUser(app):
         possibleX = [x-8, x+8, x]
         for x in possibleX:
             if app.UserX-80 <= x <= app.UserX+80:
-                if y >= app.height-30:
+                if y >= app.UserY-40:
                     app.enemyMissiles.remove(coords)
                     return True
     
@@ -392,15 +396,21 @@ def redrawAll(app, canvas):
     # draw enemy missiles
     for coordinate in app.enemyMissiles:
         drawEnemyMissile(app, canvas, coordinate[1], coordinate[2])
+    
     # extra features/gameplay information
+    # draw health bar
     drawHealthBar(app, canvas, app.health)
     # draw box to enclosed missile counter and score
     cx = app.width//2
     cy = 50
     canvas.create_rectangle(cx -210, cy-30, cx + 210, cy + 60, fill = 'black')
+    # draw missiles in the air 
     drawMissileCounter(app, canvas)
+    # draw score (enemy jets taken down)
     drawScore(app, canvas)
-    if app.gameOver:
+    
+    # game over animation (condition 1)
+    if app.MissilesInAir > 50:
         cx = app.width//2
         cy = app.height//2
         canvas.create_rectangle(cx - 310, cy - 50, cx + 310, cy + 60, fill = 'black')
@@ -413,6 +423,22 @@ def redrawAll(app, canvas):
         canvas.create_text(app.width//2, app.height//2, 
                             text = 'Overheating: Missiles Fired Exceeding Limit', fill = 'orange',
                             font = 'Courier 40 bold')
+    # game over animation (condition 2)
+    if app.health <= 0:
+        cx = app.width // 2
+        cy = app.height//2
+        canvas.create_rectangle(cx-200, cy-100, cx+200, cy+100, fill = 'black')
+        canvas.create_text(app.width//2, app.height//2-20, text = 'FIGHTER DOWN', 
+                            fill = 'red', font = 'Courier 40 bold')
+        canvas.create_text(app.width//2, app.height//2+50, 
+                            text = 'Press "r" to restart', fill = 'red', 
+                            font = 'Courier 30 bold')
+    elif app.health <= 20:
+        if app.timePassed % 50 == 0:
+            canvas.create_text(1150, 100, text = "WARNING", fill= 'red',
+                                font = 'Courier 90 bold')
+    
+    # draw pause button/pause animation
     drawPauseButton(app, canvas)
     if app.pause:
         drawPause(app, canvas)
