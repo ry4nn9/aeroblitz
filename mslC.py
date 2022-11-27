@@ -1,13 +1,5 @@
 import math
 
-# user jet class (selection of jets player can choose from)
-class Jet:
-    def __init__(self, health, speed, missileType, color):
-        self.health = health
-        self.speed = speed
-        self.missileType = missileType
-        self.color = color
-
 # missile class (different types of missiles that enemy jets can shoot)
     
 class Linear:
