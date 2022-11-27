@@ -1,28 +1,6 @@
 from cmu_112_graphics import *
+import classes 
 import random
-
-class Jet:
-    def __init__(self, health, damage, speed, missileDamage, color):
-        self.health = health
-        self.damage = damage
-        self.speed = speed
-        self.missileDamage = missileDamage
-        self.color = color
-    def getAttribute(self, attribute):
-        if attribute == 'health':
-            return self.health
-        elif attribute == 'damage':
-            return self.damage
-        elif attribute == 'speed':
-            return self.speed
-        elif attribute == 'missile':
-            return self.missileDamage
-        elif attribute == 'color':
-            return self.color
-    
-Hawk = Jet(300, 50, 95, 100, "red")
-Beacon = Jet(400, 60, 65, 125, "blue")
-Falcon = Jet(250, 35, 120, 75, "gray")
 
 def appStarted(app):
     app.score = 0
@@ -65,20 +43,24 @@ def keyPressed(app, event):
 def mousePressed(app, event):
     pass
 
-
 # bird's eye view
 
 def appStarted(app):
+    # gameplay features/information
     app.score = 0
     app.gameOver = False
     app.timePassed = 0
     app.timerDelay = 10
-    app.enemySpawnX0 = random.randint(60, app.width-110)
-    app.enemySpawnY0 = 0
     app.pause = False
     app.health = 100
+
+    # enemy jet's coordinates
+    app.enemySpawnX0 = random.randint(60, app.width-110)
+    app.enemySpawnY0 = 0
     app.enemyJets = []
     app.enemyJetXCoord = set()
+    # enemy jet's missiles
+    app.enemyMissiles = []
 
     # user jet's coordinates
     app.UserX = app.width//2
@@ -89,13 +71,21 @@ def appStarted(app):
     app.userMissiles = []
     # app.image1 = 
 
-    # enemy jet's missiles
-    app.enemyMissiles = []
+    # selection of Jets (for user)
+    Hawk = classes.Jet(300, 50, 100, "green")
+    Beacon = classes.Jet(400, 60, 125, "brown")
+    Falcon = classes.Jet(250, 80, 75, "gray")
+    app.jetSelection = [Hawk, Beacon, Falcon]
+
+    # types of missiles (for enemy)
+    # app.enemyMissileTypes = ['para2', 'para1']
+    app.enemyMissileTypes = ['linear', 'sin', 'para1', 'para2']
 
 
 def mousePressed(app, event):
     if app.gameOver:
         return
+    # if game is not over
     if 25 <= event.x <= 50 and 25 <= event.y <= 50:
         app.pause = not app.pause
             
@@ -112,19 +102,23 @@ def keyPressed(app, event):
     if app.pause:
         return
 
+    # keys accessible when game is not paused or over
+    # move user jet to the right
     if event.key == 'Right' or event.key == 'd':
         if app.UserX+50 >= app.width:
             app.UserX = app.UserX
         else: 
             app.UserX += 50
+    # move user jet to the left
     elif event.key == 'Left' or event.key == 'a':
         if app.UserX-50 <= 0:
             app.UserX = app.UserX
         else: 
             app.UserX -= 50
+    # shoot missiles from user jet
     elif event.key == 'Space':
         getUserMissileCoord(app)
-        if app.MissilesInAir > 25:
+        if app.MissilesInAir > 50:
             app.gameOver = not app.gameOver
             app.health = 0
         
@@ -135,14 +129,18 @@ def timerFired(app):
     if app.pause:
         return
     app.timePassed += app.timerDelay
+    
+    # if game is not paused or over
     if app.timePassed % 100 == 0:
         spawnEnemyJet(app)
     if app.timePassed % 5 == 0:
         moveEnemyJet(app)
         shootUserMissile(app)
-    if app.timePassed % 500 == 0:
+    # need to set general variable for addEnemyMissile
+    if app.timePassed % 1000 == 0:
         addEnemyMissile(app)
-    if app.timePassed % 20 == 0:
+    # need to set general variable for shootEnemyMissile
+    if app.timePassed % 10 == 0:
         shootEnemyMissile(app)
 
 def drawHealthBar(app, canvas, health):
@@ -150,19 +148,19 @@ def drawHealthBar(app, canvas, health):
     x1 = 1/10 * app.width
     y0 = 0
     y1 = 1/50 * app.height
+    # draw rectangle to fill in colors when health bars disappear
+    canvas.create_rectangle(x0, y0, app.width, y1, fill = 'dark gray')
     for bar in range(health//10):
         canvas.create_rectangle(x0, y0, x1, y1, fill = 'red', 
                                     outline = 'white', width = 3)
         x0, x1 = x1, (x1 + 1/10*app.width)
-    # draw rectangle to fill in colors when health bars disappear
-    canvas.create_rectangle(x0, y0, app.width, y1, fill = 'tan')
-
-def drawHealthLine(app, canvas):
     x0 = 0
     x1 = app.width
     y0 = 1/50 * app.height
     y1 = 1/50 * app.height
-    canvas.create_line(x0, y0, x1, y1, fill = 'white')
+    canvas.create_line(x0, y0, x1, y1, fill = 'tan')
+    canvas.create_text(app.width-50, 100, text = f'{app.health}',
+                        fill = 'red', font = 'Courier 15')
 
 def drawPauseButton(app, canvas):
     canvas.create_image
@@ -226,7 +224,7 @@ def drawUserJet(app, canvas, cx, cy):
     canvas.create_rectangle(mslCx1 - 30, wingY - 10, mslCx1 - 20, wingY, fill = 'pale goldenrod', outline = 'black')
 
 def getUserMissileCoord(app):
-    app.MissilesInAir += 1
+    app.MissilesInAir += 2
     app.userMissiles.append([app.UserX, app.UserY])
     # each actual missile x-coordinate in userMissile is +- 7.5 units from
     # the x-coordinate in the userMissiles list
@@ -290,7 +288,6 @@ def spawnEnemyJet(app):
         if isNotOverlap(app, bound1, bound2):
             app.enemyJetXCoord.add(app.enemySpawnX0)
             app.enemyJets.append([app.enemySpawnX0, app.enemySpawnY0])
-            app.enemyMissiles.append([app.enemySpawnX0, app.enemySpawnY0])
 
 def isNotOverlap(app, bound1, bound2):
     include = set(range(bound1, bound2+1))
@@ -308,7 +305,7 @@ def moveEnemyJet(app):
         # y-coordinate --> coordinate[1]
         for coordinate in app.enemyJets:
             coordinate[1] += 1
-            if hitBoxMissile(app, coordinate):
+            if hitBoxEnemy(app, coordinate):
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
                 app.score += 1
@@ -321,22 +318,52 @@ def drawEnemyMissile(app, canvas, x, y):
                             outline = 'red')
 
 def addEnemyMissile(app):
-    for coord in app.enemyJets:
-        app.enemyMissiles.append([coord[0], coord[1]])
+    for x, y in app.enemyJets:
+        missileType = random.choice(app.enemyMissileTypes)
+        if missileType == 'linear':
+            missile = classes.Linear(x, y)
+        elif missileType == 'sin':
+            missile = classes.Sinusoidal(x, y)
+        elif missileType == 'para1':
+            missile = classes.Parabolic(x, y)
+        elif missileType == 'para2':
+            missile = classes.Parabolic2(x, y)
+        app.enemyMissiles.append([missile, x, y])
 
 def shootEnemyMissile(app):
-    for coordPair in app.enemyMissiles:
-        coordPair[1] += 10
-        
+    for info in app.enemyMissiles:
+        dy = info[0].eq()[0]
+        dx = info[0].eq()[1]
+        info[2] += dy
+        info[1] += dx
+        if hitBoxUser(app):
+            app.health -= 1
+        elif info[2] >= app.height:
+            app.enemyMissiles.remove(info)
 
 def shootUserMissile(app):
     for pair in app.userMissiles:
         pair[1] -= 10
         if pair[1] <= -700:
             app.userMissiles.remove(pair)
-            app.MissilesInAir -= 1
+            app.MissilesInAir -= 2
 
-def hitBoxMissile(app, coordPair):
+# hitbox when enemy missiles hit user's jet
+def hitBoxUser(app):
+    for coords in app.enemyMissiles:
+        x = coords[1]
+        y = coords[2]
+        possibleX = [x-8, x+8, x]
+        for x in possibleX:
+            if app.UserX-80 <= x <= app.UserX+80:
+                if y >= app.height-30:
+                    app.enemyMissiles.remove(coords)
+                    return True
+    
+    return False
+
+# hitbox when user missiles hit enemy's jet
+def hitBoxEnemy(app, coordPair):
     for coords in app.userMissiles:
         x = coords[0]
         y = coords[1]
@@ -346,7 +373,7 @@ def hitBoxMissile(app, coordPair):
             if coordPair[0]-50 <= x <= coordPair[0]+50:
                 if coordPair[1] <= wingY <= coordPair[1] + 50:
                     app.userMissiles.remove(coords)
-                    app.MissilesInAir -= 1
+                    app.MissilesInAir -= 2
                     return True
     
     return False
@@ -364,10 +391,9 @@ def redrawAll(app, canvas):
         drawEnemyJet(app, canvas, coordinate[0], coordinate[1])
     # draw enemy missiles
     for coordinate in app.enemyMissiles:
-        drawEnemyMissile(app, canvas, coordinate[0], coordinate[1])
+        drawEnemyMissile(app, canvas, coordinate[1], coordinate[2])
     # extra features/gameplay information
     drawHealthBar(app, canvas, app.health)
-    drawHealthLine(app, canvas)
     # draw box to enclosed missile counter and score
     cx = app.width//2
     cy = 50
@@ -381,9 +407,9 @@ def redrawAll(app, canvas):
         canvas.create_text(app.width//2, app.height//2, 
                             text = 'System Failure: Overheat'.upper(), fill = 'red',
                             font = 'Courier 40 bold')
-        canvas.create_text(app.width//2, app.height//2+30, text = "[Missile Limit: 25] (EXCEEDED)", fill = 'red',
+        canvas.create_text(app.width//2, app.height//2+30, text = "[Missile Limit: 50] (EXCEEDED)", fill = 'red',
                             font = 'Courier 20 bold')
-    elif app.MissilesInAir >= 20:
+    elif app.MissilesInAir >= 40:
         canvas.create_text(app.width//2, app.height//2, 
                             text = 'Overheating: Missiles Fired Exceeding Limit', fill = 'orange',
                             font = 'Courier 40 bold')
@@ -396,8 +422,5 @@ def redrawAll(app, canvas):
     
 # change width to 1440 (final)
 runApp(width = 1440, height = 778)
-
-
-
 
 
