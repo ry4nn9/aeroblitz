@@ -67,6 +67,7 @@ def appStarted(app):
     app.UserY = app.height-(1/5*app.height)
 
     # user jet's missiles
+    app.specialActivated = False
     app.MissilesInAir = 0
     app.userMissiles = []
     # app.image1 = 
@@ -77,9 +78,10 @@ def appStarted(app):
     Thunderbolt = jetC.Thunderbolt(200, 100, app.UserX, app.UserY)
     app.jetSelection = [Hawk, Falcon, Thunderbolt]
     app.userJet = random.choice(app.jetSelection)
+    app.userJetFull = app.userJet.health
 
     # types of missiles (for enemy)
-    # app.enemyMissileTypes = ['sin']
+    # app.enemyMissileTypes = ['cubic']
     app.enemyMissileTypes = ['linear', 'sin', 'para1', 'para2', 'cubic']
 
 
@@ -111,14 +113,20 @@ def keyPressed(app, event):
         else: 
             app.userJet.UserX += app.userJet.speed
     # move user jet to the left
-    elif event.key == 'Left' or event.key == 'a':
+    if event.key == 'Left' or event.key == 'a':
         if app.userJet.UserX-50 <= 0:
             app.userJet.UserX = app.width-50
         else: 
             app.userJet.UserX -= app.userJet.speed
     # shoot missiles from user jet
-    elif event.key == 'Space':
-        getUserMissileCoord(app)
+    if event.key == 't':
+        app.specialActivated = not app.specialActivated
+
+    if event.key == 'Space':
+        if app.specialActivated:
+            getUserMissileCoord(app)
+        else:
+            getUserMissileCoord(app)
         if app.MissilesInAir > 50:
             app.gameOver = not app.gameOver
             app.userJet.health = 0
@@ -144,15 +152,14 @@ def timerFired(app):
         shootEnemyMissile(app)
         shootUserMissile(app)
 
-def drawHealthBar(app, canvas, health):
+def drawHealthBar(app, canvas, health, divider):
     x0 = 0
     x1 = 1/10 * app.width
     y0 = 0
     y1 = 1/50 * app.height
     # draw rectangle to fill in colors when health bars disappear
     canvas.create_rectangle(x0, y0, app.width, y1, fill = 'dark gray')
-
-    for bar in range(health//10):
+    for bar in range(health//divider):
         canvas.create_rectangle(x0, y0, x1, y1, fill = 'red', 
                                     outline = 'white', width = 3)
         x0, x1 = x1, (x1 + 1/10*app.width)
@@ -187,10 +194,15 @@ def drawBackground(app, canvas):
     canvas.create_rectangle(0, 0, app.width, app.height, fill = 'black')
 
 def getUserMissileCoord(app):
-    app.MissilesInAir += 2
-    app.userMissiles.append([app.userJet.UserX, app.userJet.UserY])
+    if app.specialActivated:
+        special = mslC.Tangent(app.userJet.UserX, app.userJet.UserY)
+        app.userMissiles.append(special)
+    else:
+        regular = mslC.ULinear(app.userJet.UserX, app.userJet.UserY)
+        app.userMissiles.append(regular)
     # each actual missile x-coordinate in userMissile is +- 7.5 units from
     # the x-coordinate in the userMissiles list
+    app.MissilesInAir += 2
     
 
 def drawMissileCounter(app, canvas):
@@ -216,22 +228,22 @@ def drawEnemyJet(app, canvas, x0, y0):
     # x and y-coord in app.enemyJets are the center coordinates of enemy jets
 
     canvas.create_rectangle(x0-10, y0-10, x0+10, y0+40, outline = 'black',
-                            fill = 'DarkSlateGray4')
+                            fill = 'silver')
 
     # draw jet's missile shooter
 
-    canvas.create_rectangle(x0-8, y0+40, x0+8, y0+45, outline = 'medium violet red', 
-                            fill = 'medium violet red')
+    canvas.create_arc(x0-8, y0+35, x0+8, y0+50, outline = 'black', 
+                            fill = 'medium violet red', extent = -180)
     
     #draw right wing 
     
     canvas.create_polygon(x0-10, y0, x0-50, y0, x0-30, y0+20, x0-10, y0+20, 
-                            fill = 'DarkSlateGray4', outline = 'black')
+                            fill = 'SlateGray2', outline = 'black')
     # draw right tail
 
     #draw left wing
     canvas.create_polygon(x0+10, y0, x0+50, y0, x0+30, y0+20, x0+10, y0+20, 
-                            fill = 'DarkSlateGray4', outline = 'black')
+                            fill = 'SlateGray2', outline = 'black')
     #draw left tail 
 
 # def drawEnemyJetFractal(app, canvas, level, cx, cy):
@@ -272,6 +284,11 @@ def moveEnemyJet(app):
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
                 app.score += 1
+                # user gains 5 health when killing enemy jet
+                if app.userJet.health <= app.userJetFull:
+                    app.userJet.health += 2
+                    if app.userJet.health > app.userJetFull:
+                        app.userJet.health = app.userJetFull
             if coordinate[1] >= app.height-100:
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
@@ -293,54 +310,51 @@ def addEnemyMissile(app):
             missile = mslC.Parabolic2(x, y)
         elif missileType == 'cubic':
             missile  = mslC.Cubic(x, y)
-        app.enemyMissiles.append([missile, x, y])
+        app.enemyMissiles.append(missile)
 
 def shootEnemyMissile(app):
-    for info in app.enemyMissiles:
-        dy = info[0].eq()[0]
-        dx = info[0].eq()[1]
-        info[2] += dy
-        info[1] += dx
+    for missile in app.enemyMissiles:
+        missile.eq()
         if hitBoxUser(app):
-            app.userJet.health -= info[0].damage
+            app.userJet.health -= missile.damage
             if app.userJet.health <= 0:
                 app.gameOver = True
-        elif info[2] >= app.height:
-            app.enemyMissiles.remove(info)
+        elif missile.y >= app.height:
+            app.enemyMissiles.remove(missile)
     
 
 def shootUserMissile(app):
-    for pair in app.userMissiles:
-        pair[1] -= 10
-        if pair[1] <= -700:
-            app.userMissiles.remove(pair)
+    for missile in app.userMissiles:
+        missile.eq()
+        if missile.y <= -700:
+            app.userMissiles.remove(missile)
             app.MissilesInAir -= 2
 
 # hitbox when enemy missiles hit user's jet
 def hitBoxUser(app):
-    for coords in app.enemyMissiles:
-        x = coords[1]
-        y = coords[2]
+    for missile in app.enemyMissiles:
+        x = missile.x
+        y = missile.y
         possibleX = [x-8, x+8, x]
         for x in possibleX:
             if app.userJet.UserX-80 <= x <= app.userJet.UserX+80:
                 if y >= app.userJet.UserY-40 and y <= app.userJet.UserY+40:
-                    app.enemyMissiles.remove(coords)
+                    app.enemyMissiles.remove(missile)
                     return True
     
     return False
 
 # hitbox when user missiles hit enemy's jet
 def hitBoxEnemy(app, coordPair):
-    for coords in app.userMissiles:
-        x = coords[0]
-        y = coords[1]
+    for missile in app.userMissiles:
+        x = missile.x
+        y = missile.y
         wingY = (y-10+app.height-30)//2
         possibleX = [x-27.5, x+27.5, x-37.5, x+37.5]
         for x in possibleX:
             if coordPair[0]-50 <= x <= coordPair[0]+50:
                 if coordPair[1] <= wingY <= coordPair[1] + 50:
-                    app.userMissiles.remove(coords)
+                    app.userMissiles.remove(missile)
                     app.MissilesInAir -= 2
                     return True
     
@@ -352,18 +366,17 @@ def redrawAll(app, canvas):
     # draw user's jet
     app.userJet.redraw(app, canvas)
     # draw missiles shot by user
-    for x,y in app.userMissiles:
-        drawUserMissiles(app, canvas, x, y)
+    for missile in app.userMissiles:
+        missile.redraw(app, canvas)
     # draw enemy jets 
     for coordinate in app.enemyJets:
         drawEnemyJet(app, canvas, coordinate[0], coordinate[1])
     # draw enemy missiles
-    for coordinate in app.enemyMissiles:
-        drawEnemyMissile(app, canvas, coordinate[1], coordinate[2])
-    
+    for missile in app.enemyMissiles:
+        missile.redraw(app, canvas)
     # extra features/gameplay information
     # draw health bar
-    drawHealthBar(app, canvas, app.userJet.health)
+    drawHealthBar(app, canvas, app.userJet.health, app.userJetFull//10)
     # draw box to enclosed missile counter and score
     cx = app.width//2
     cy = 50
