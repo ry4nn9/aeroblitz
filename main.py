@@ -76,9 +76,9 @@ def appStarted(app):
     # app.image1 = 
 
     # selection of Jets (for user)
-    Hawk = jetC.Hawk(300, 75, app.UserX, app.UserY)
-    Falcon = jetC.Falcon(400, 50, app.UserX, app.UserY)
-    Thunderbolt = jetC.Thunderbolt(200, 100, app.UserX, app.UserY)
+    Hawk = jetC.Hawk(300, 100, app.UserX, app.UserY)
+    Falcon = jetC.Falcon(400, 75, app.UserX, app.UserY)
+    Thunderbolt = jetC.Thunderbolt(250, 150, app.UserX, app.UserY)
     app.jetSelection = [Hawk, Falcon, Thunderbolt]
     app.userJet = random.choice(app.jetSelection)
     app.userJetFull = app.userJet.health
@@ -157,6 +157,7 @@ def timerFired(app):
         moveEnemyJet(app)
     # need to set general variable for addEnemyMissile (default = 1000)
     if app.timePassed % app.mslPerSec == 0:
+    # if app.timePassed % 200 == 0: # test conditional
         addEnemyMissile(app)
     # need to set general variable for shootEnemyMissile
     if app.timePassed % 10 == 0:
@@ -259,10 +260,9 @@ def drawEnemyJet(app, canvas, x0, y0, unit):
                             fill = 'SlateGray2', outline = 'black')
     #draw left tail 
 
-# def drawEnemyJetFractal(app, canvas, level, cx, cy):
-#     if level == 0: 
-#         drawEnemyJet(app, canvas, cx, cy)
-#     else:
+
+# draw enemy jet fractal (if have time)
+
 
 # spawns enemy jets at the top of the screen
 def spawnEnemyJet(app):
@@ -310,6 +310,7 @@ def moveEnemyJet(app):
             if coordinate[1] >= app.height-100:
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
+                app.userJet.health -= 10
 
 # chooses random missile type and adds it to enemy jet
 def addEnemyMissile(app):
