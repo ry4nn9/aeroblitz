@@ -271,8 +271,8 @@ def spawnEnemyJet(app):
         return
     enemySpawnX0 = random.randint(60, app.width-110)
     app.enemySpawnX0 = enemySpawnX0
-    bound1 = app.enemySpawnX0 - 60
-    bound2 = app.enemySpawnX0 + 110
+    bound1 = app.enemySpawnX0 - 50
+    bound2 = app.enemySpawnX0 + 50
     if len(app.enemyJets) <= app.enemyJetCapacity:
         if isNotOverlap(app, bound1, bound2):
             app.enemyJetXCoord.add(app.enemySpawnX0)
