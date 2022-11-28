@@ -109,7 +109,7 @@ class Cubic:
                             outline = 'pale green', width = 2)
 
 # special power for user
-class Tangent:
+class Special:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -122,19 +122,19 @@ class Tangent:
             self.y = 0
         else:
             self.y -= 10
-            self.x += 10*math.tan(self.y)
+            self.x += 10*math.cos(5*self.y)
 
     def redraw(self, app, canvas):
         wingY = (self.y-10+app.height-30)//2
         # right missile
         mslCx = self.x + 7.5
         # canvas.create_rectangle(mslCx - 2, wingY + 35, mslCx + 2, wingY + 40, outline = 'green')
-        canvas.create_rectangle(mslCx + 30, wingY - 10, mslCx + 20, wingY, 
-                                fill = 'DarkSlateGray1', outline = 'misty rose')
+        canvas.create_oval(mslCx + 30, wingY - 12, mslCx + 20, wingY, 
+                                fill = 'DarkSlateGray', outline = 'misty rose')
 
         # left missile
         mslCx1 = self.x - 7.5
-        canvas.create_rectangle(mslCx1 - 30, wingY - 10, mslCx1 - 20, wingY, 
+        canvas.create_oval(mslCx1 - 30, wingY - 12, mslCx1 - 20, wingY, 
                                 fill = 'DarkSlateGray1', outline = 'misty rose')
 
 
