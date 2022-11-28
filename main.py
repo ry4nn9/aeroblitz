@@ -140,7 +140,8 @@ def keyPressed(app, event):
         
 
 def timerFired(app):
-    if app.gameOver:
+    if app.userJet.health <= 0:
+        app.gameOver = True
         return
     if app.pause:
         return
@@ -338,8 +339,6 @@ def shootEnemyMissile(app):
             app.MissilesInAir -= 2
         elif hitBoxUser(app):
             app.userJet.health -= missile.damage
-            if app.userJet.health <= 0:
-                app.gameOver = True
         elif missile.y >= app.height:
             app.enemyMissiles.remove(missile)
         
@@ -360,7 +359,7 @@ def hitBoxUser(app):
         possibleX = [x-8, x+8, x]
         for x in possibleX:
             if app.userJet.UserX-80 <= x <= app.userJet.UserX+80:
-                if y >= app.userJet.UserY-40 and y <= app.userJet.UserY+40:
+                if y >= app.userJet.UserY-40 and y <= app.userJet.UserY+60:
                     app.enemyMissiles.remove(missile)
                     return True
     
