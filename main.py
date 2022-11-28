@@ -52,10 +52,10 @@ def appStarted(app):
     app.gameOver = False
     app.timePassed = 0
     app.difficultyTracker = 0
-    app.enemyJetCapacity = 2
+    app.enemyJetCapacity = 0
     app.timerDelay = 10
     app.pause = False
-    app.mslPerSec = 3000 # increase fire rate by 0.04s every 10 targets down
+    app.mslPerSec = 2000 # increase fire rate by 0.04s every 10 targets down
 
     # enemy jet's coordinates
     app.enemySpawnX0 = random.randint(60, app.width-110)
@@ -134,7 +134,7 @@ def keyPressed(app, event):
             getUserMissileCoord(app)
         else:
             getUserMissileCoord(app)
-        if app.MissilesInAir > 50:
+        if app.MissilesInAir > 30:
             app.gameOver = not app.gameOver
             app.userJet.health = 0
         
@@ -148,7 +148,7 @@ def timerFired(app):
     app.difficultyTracker += app.timerDelay
     if app.difficultyTracker == 30000:
         app.difficultyTracker = 0
-        app.enemyJetCapacity += 2
+        app.enemyJetCapacity += 1
     
     # if game is not paused or over
     if app.timePassed % 100 == 0:
@@ -231,7 +231,7 @@ def getUserMissileCoord(app):
 def drawMissileCounter(app, canvas):
     canvas.create_text(app.width//2, 68, text = f'Missiles On Course: {app.MissilesInAir}', 
                         fill = "green", font = 'Courier 20')
-    canvas.create_text(app.width//2, 90, text = f'Enemy Fire Rate: {app.mslPerSec/1000} msls/second', fill = 'green',
+    canvas.create_text(app.width//2, 90, text = f'Enemy Fire Rate: 1 msls/{app.mslPerSec/1000}sec', fill = 'green',
                         font = 'Courier 15')
 
 def drawEnemyJet(app, canvas, x0, y0, unit):
@@ -293,7 +293,7 @@ def moveEnemyJet(app):
         # x-coordinate --> coordinate[0]
         # y-coordinate --> coordinate[1]
         for coordinate in app.enemyJets:
-            coordinate[1] += 1
+            coordinate[1] += 2
             if hitBoxEnemy(app, coordinate):
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
@@ -303,10 +303,10 @@ def moveEnemyJet(app):
                     if app.mslPerSec <= 0:
                         app.mslPerSec = 25
                 # user gains 5 health when killing enemy jet
-                if app.userJet.health <= app.userJetFull:
-                    app.userJet.health += 2
-                    if app.userJet.health > app.userJetFull:
-                        app.userJet.health = app.userJetFull
+                # if app.userJet.health <= app.userJetFull:
+                #     app.userJet.health += 2
+                #     if app.userJet.health > app.userJetFull:
+                #         app.userJet.health = app.userJetFull
             if coordinate[1] >= app.height-100:
                 app.enemyJets.remove(coordinate)
                 app.enemyJetXCoord.remove(coordinate[0])
@@ -427,16 +427,16 @@ def redrawAll(app, canvas):
     drawScore(app, canvas)
     
     # game over animation (condition 1)
-    if app.MissilesInAir > 50:
+    if app.MissilesInAir > 30:
         cx = app.width//2
         cy = app.height//2
         canvas.create_rectangle(cx - 310, cy - 50, cx + 310, cy + 60, fill = 'black')
         canvas.create_text(app.width//2, app.height//2, 
                             text = 'System Failure: Overheat'.upper(), fill = 'red',
                             font = 'Courier 40 bold')
-        canvas.create_text(app.width//2, app.height//2+30, text = "[Missile Limit: 50] (EXCEEDED)", fill = 'red',
+        canvas.create_text(app.width//2, app.height//2+30, text = "[Missile Limit: 30] (EXCEEDED)", fill = 'red',
                             font = 'Courier 20 bold')
-    elif app.MissilesInAir >= 40:
+    elif app.MissilesInAir >= 20:
         canvas.create_text(app.width//2, app.height//2, 
                             text = 'Overheating: Missiles Fired Exceeding Limit', fill = 'orange',
                             font = 'Courier 40 bold')
