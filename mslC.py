@@ -115,7 +115,7 @@ class Special:
         self.y = y
         self.damage = 10
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 20
+        self.speed = 30
     
     def eq(self):
         if self.y == 350:
