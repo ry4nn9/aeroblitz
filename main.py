@@ -107,29 +107,30 @@ def start_mouseMoved(app, event):
         app.Thunderbolt.color = 'black'
 
 def start_timerFired(app):
-    app.timePassed += 10*app.timerDelay
+    app.timePassed += 2*app.timerDelay
     
     # spawn jets
     enemySpawnX0 = random.randint(50, app.width//2-350)
     enemySpawnX1 = random.randint(app.width//2+350, app.width-100)
     L = [enemySpawnX0, enemySpawnX1]
     for x in L:
-        bound1 = x - 50
-        bound2 = x + 50
+        bound1 = x - 60
+        bound2 = x + 60
         if len(app.enemyJets) <= 1:
             if isNotOverlap(app, bound1, bound2):
                 app.enemyJetXCoord.add(x)
                 app.enemyJets.append([x, app.enemySpawnY0])
         
     # move jets
-    for coordinate in app.enemyJets:
-        coordinate[1] += 2
-        if coordinate[1] >= app.height-100:
-            app.enemyJets.remove(coordinate)
-            app.enemyJetXCoord.remove(coordinate[0])
+    if app.timePassed % 10 == 0:
+        for coordinate in app.enemyJets:
+            coordinate[1] += 2
+            if coordinate[1] >= app.height-100:
+                app.enemyJets.remove(coordinate)
+                app.enemyJetXCoord.remove(coordinate[0])
     
     # add missiles to enemy jet
-    if app.timePassed % 1000 == 0:
+    if app.timePassed % 800 == 0:
         addEnemyMissile(app)
     
     # shoot missiles
@@ -175,7 +176,8 @@ def hawkInfo_redrawAll(app, canvas):
                             fill = 'black')
     canvas.create_rectangle(cx-500, cy-150, cx+500, cy+150, fill = 'gray21',
                             outline = 'medium sea green')
-    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red')
+    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red', 
+                            outline = 'black')
     canvas.create_text(cx, cy+225, text = 'Play', font = 'Courier 20 bold',
                         fill = 'black')
     colors = ['medium sea green', 'OliveDrab4', 'LightSteelBlue4', 'black', 'OliveDrab4',
@@ -183,6 +185,11 @@ def hawkInfo_redrawAll(app, canvas):
     drawUserJet(app, canvas, app.width//2, app.height//2-100, colors, 'Hawk')
     drawHealth(app, canvas, app.Hawk.health)
     drawSpeed(app, canvas, app.Hawk.speed)
+    canvas.create_rectangle(app.width//2-70, 75, app.width//2+70, 125, 
+                            fill = 'maroon', outline = 'black')
+    canvas.create_text(app.width//2, 100, 
+                        text = 'Back',
+                        fill = 'black', font = 'Courier 20 bold')
 
 def hawkInfo_keyPressed(app, event):
     if event.key == 'Return':
@@ -200,6 +207,9 @@ def hawkInfo_mousePressed(app, event):
             app.userJet = app.jetSelection[0]
             app.userJetFull = app.userJet.health
             app.mode = 'gameMode'
+    if cx-70 <= event.x <= cx+70:
+        if 75 <= event.y <= 125:
+            app.mode = 'start'
 
 # Falcon's Info
 ###############################################
@@ -210,7 +220,8 @@ def falconInfo_redrawAll(app, canvas):
                             fill = 'black')
     canvas.create_rectangle(cx-500, cy-150, cx+500, cy+150, fill = 'grey10',
                             outline = 'GreenYellow')
-    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red')
+    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red', 
+                            outline = 'black')
     canvas.create_text(cx, cy+225, text = 'Play', font = 'Courier 20 bold',
                         fill = 'black')
     colors = ['bisque4', 'bisque4', 'GreenYellow', 'green', 'burlywood4', 
@@ -218,6 +229,11 @@ def falconInfo_redrawAll(app, canvas):
     drawUserJet(app, canvas, app.width//2, app.height//2-100, colors, 'Falcon')
     drawHealth(app, canvas, app.Falcon.health)
     drawSpeed(app, canvas, app.Falcon.speed)
+    canvas.create_rectangle(app.width//2-70, 75, app.width//2+70, 125, 
+                            fill = 'maroon', outline = 'black')
+    canvas.create_text(app.width//2, 100, 
+                        text = 'Back',
+                        fill = 'black', font = 'Courier 20 bold')
 
 def falconInfo_keyPressed(app, event):
     if event.key == 'Return':
@@ -235,6 +251,10 @@ def falconInfo_mousePressed(app, event):
             app.userJet = app.jetSelection[1]
             app.userJetFull = app.userJet.health
             app.mode = 'gameMode'
+    if cx-70 <= event.x <= cx+70:
+        if 75 <= event.y <= 125:
+            app.mode = 'start'
+
 
 # Thunderbolt's Info
 ###############################################
@@ -245,14 +265,21 @@ def thunderboltInfo_redrawAll(app, canvas):
                             fill = 'black')
     canvas.create_rectangle(cx-500, cy-150, cx+500, cy+150, fill = 'grey15',
                             outline = 'medium slate blue')
-    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red')
+    canvas.create_rectangle(cx-70, cy+200, cx+70, cy+250, fill = 'red',
+                            outline = 'black')
     canvas.create_text(cx, cy+225, text = 'Play', font = 'Courier 20 bold',
                         fill = 'black')
+    canvas.create_rectangle(app.width//2-70, 75, app.width//2+70, 125, 
+                            fill = 'maroon', outline = 'black')
+    canvas.create_text(app.width//2, 100, 
+                        text = 'Back',
+                        fill = 'black', font = 'Courier 20 bold')
     colors = ['grey61', 'grey30', 'medium slate blue', 'purple', 'grey35', 
             'grey35', 'grey35', 'grey35', 'MediumPurple4', 'MediumPurple4']
     drawUserJet(app, canvas, app.width//2, app.height//2-100, colors, 'Thunderbolt')
     drawHealth(app, canvas, app.Thunderbolt.health)
     drawSpeed(app, canvas, app.Thunderbolt.speed)
+    
 
 def thunderboltInfo_keyPressed(app, event):
     if event.key == 'Return':
@@ -270,6 +297,9 @@ def thunderboltInfo_mousePressed(app, event):
             app.userJet = app.jetSelection[2]
             app.userJetFull = app.userJet.health
             app.mode = 'gameMode'
+    if cx-70 <= event.x <= cx+70:
+        if 75 <= event.y <= 125:
+            app.mode = 'start'
 
 ################################################
 # game play (bird-eye view)
@@ -311,7 +341,7 @@ def appStarted(app):
     # selection of Jets (for user)
     Hawk = jetC.Hawk(400, 100, app.UserX, app.UserY, 'black')
     Falcon = jetC.Falcon(500, 75, app.UserX, app.UserY, 'black')
-    Thunderbolt = jetC.Thunderbolt(250, 200, app.UserX, app.UserY, 'black')
+    Thunderbolt = jetC.Thunderbolt(250, 180, app.UserX, app.UserY, 'black')
     app.jetSelection = [Hawk, Falcon, Thunderbolt]
 
     # types of missiles (for enemy)
@@ -321,16 +351,21 @@ def appStarted(app):
     # home screen selection
     app.Hawk = jetC.Hawk(350, 100, app.width//2, app.height-(1/5*app.height), 'black')
     app.Falcon = jetC.Falcon(500, 75, app.width//3, app.height-(1/5*app.height), 'black')
-    app.Thunderbolt = jetC.Thunderbolt(250, 200, 2*app.width//3, app.height-(1/5*app.height), 'black')
+    app.Thunderbolt = jetC.Thunderbolt(250, 180, 2*app.width//3, app.height-(1/5*app.height), 'black')
 
 
 def gameMode_mousePressed(app, event):
     if app.gameOver:
         return
     if app.pause:
-        if app.width//2-110 <= event.x <= app.width//2+110:
-            if app.height//2-50 <= event.y <= app.height//2+60:
+        if app.width//2-140 <= event.x <= app.width//2-30:
+            if app.height//2+20 <= event.y <= app.height//2+60:
                 app.pause = False
+        if app.width//2+30 <= event.x <= app.width//2+140:
+            if app.height//2+20 <= event.y <= app.height//2+60:
+                appStarted(app)
+                app.mode = 'start'
+
     # if game is not over
     if 25 <= event.x <= 50 and 25 <= event.y <= 50:
         app.pause = not app.pause
@@ -441,10 +476,18 @@ def drawPause(app, canvas):
     cx = app.width//2
     cy = app.height//2
     canvas.create_rectangle(cx - 210, cy - 100, cx + 210, cy + 110, fill = 'black')
-    canvas.create_text(app.width//2, app.height//2, text = 'Game paused', 
+    canvas.create_text(app.width//2, app.height//2-20, text = 'Game paused', 
                         font = 'Courier 30 bold', fill = 'red')
-    canvas.create_text(app.width//2, app.height//2+25, text = 'Press "p" to unpause', fill = 'red',
-                        font = 'Courier 15 bold')
+    # resume game button
+    canvas.create_rectangle(app.width//2-140, app.height//2+20, app.width//2-30, 
+                            app.height//2+60, fill = 'red', outline = 'black')
+    canvas.create_text(app.width//2-85, app.height//2+40, text = 'Resume', 
+                        fill = 'black', font = 'Courier 15 bold')
+    # restart game button
+    canvas.create_rectangle(app.width//2+140, app.height//2+20, app.width//2+30, 
+                            app.height//2+60, fill = 'red', outline = 'black')
+    canvas.create_text(app.width//2+85, app.height//2+40, text = 'Return Home', 
+                        fill = 'black', font = 'Courier 15 bold')
 
 def drawScore(app, canvas):
     canvas.create_text(app.width//2, 40, text = f"Targets Down: {app.score}", 
