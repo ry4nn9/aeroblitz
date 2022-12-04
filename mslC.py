@@ -8,7 +8,7 @@ class Linear:
         self.y = y
         self.damage = 10
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 15
+        self.speed = 20
 
     def eq(self):
         # if self.y == 350:
@@ -27,7 +27,7 @@ class Sinusoidal:
         self.y = y
         self.damage = 5
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 5
+        self.speed = 10
 
     def eq(self):
         # if self.y == 350:
@@ -48,14 +48,17 @@ class Parabolic:
         self.y = y
         self.damage = 1
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 10
+        self.speed = 5
     
     def eq(self):
         # if self.y == 350:
         #     self.y = 0
         # else:
-        self.y += self.speed
-        self.x += 0.00005*(self.y**2)
+        if self.y >= 400:
+            self.y += self.speed
+        else:
+            self.y += self.speed
+            self.x += 0.00005*(self.y**2)
         
 
     def redraw(self, app, canvas):
@@ -73,14 +76,18 @@ class Parabolic2:
         self.y = y
         self.damage = 1
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 10
+        self.speed = 5
     
     def eq(self):
         # if self.y == 350:
         #     self.y = 0
         # else:
-        self.y += self.speed
-        self.x += -0.00005*(self.y**2)
+        if self.y >= 400:
+            self.y += self.speed
+        else:
+            self.y += self.speed
+            self.x += -0.00005*(self.y**2)
+
         
 
     def redraw(self, app, canvas):
@@ -97,7 +104,7 @@ class Cubic:
         self.y = y
         self.damage = 2
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 5
+        self.speed = 3
     
     def eq(self):
         self.y += self.speed
@@ -110,18 +117,18 @@ class Cubic:
 
 # special power for user
 class Special:
-    def __init__(self, x, y):
+    def __init__(self, x, y, speed):
         self.x = x
         self.y = y
         self.damage = 10
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 30
+        self.speed = speed
     
     def eq(self):
         if self.y == 350:
             self.y = 0
         else:
-            self.y -= 10
+            self.y -= 20
             self.x += 10*math.cos(5*self.y)
 
     def redraw(self, app, canvas):
@@ -139,18 +146,18 @@ class Special:
 
 
 class ULinear:
-    def __init__(self, x, y):
+    def __init__(self, x, y, speed):
         self.x = x
         self.y = y
         self.damage = 10
         # time passed for each missile movement (lower the number, the faster the speed)
-        self.speed = 15
+        self.speed = speed
 
     def eq(self):
         # if self.y == 350:
         #     self.y = 0
         # else:
-        self.y -= self.speed
+        self.y -= 30
         
 
     def redraw(self, app, canvas):
