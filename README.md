@@ -1,5 +1,5 @@
 # term-project
-AeroBlitz! (Jet Fighter Game) 
+Dogfight
 
 A user-interactive game that involves playing until death and increasing your score by shooting down enemy jets using missiles. 
 There are many different features of both the enemy jets and the user jets, such as different jet models and different bullet pattern types. 
